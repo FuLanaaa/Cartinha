@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feliz Aniversário 🎉</title>
+<style>
+  body, html {
+    margin:0; padding:0;
+    height:100%; width:100%;
+    font-family: Arial, sans-serif;
+    background:#000;
+    overflow:hidden;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+  }
+
+  body::before {
+    content:'';
+    position:absolute; inset:0;
+    background: linear-gradient(270deg,#ff6b6b,#ffd166,#06d6a0,#4cc9f0,#b197fc,#ff9ec5,#ff6b6b);
+    background-size: 1400% 1400%;
+    animation: gradientBG 20s ease infinite;
+    filter:blur(100px);
+    z-index:-1;
+  }
+  @keyframes gradientBG {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+
+  .envelope {
+    width:80px; height:60px;
+    background:#ffcf33;
+    border-radius:12px;
+    position:absolute;
+    top:-150px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    box-shadow:0 0 20px #ffcf33,0 0 40px #ffcf33;
+    transition: transform 0.5s ease, top 1s ease;
+  }
+  .envelope::before {
+    content:'';
+    position:absolute;
+    width:0; height:0;
+    border-left:40px solid transparent;
+    border-right:40px solid transparent;
+    border-bottom:30px solid #ffb600;
+    top:-30px;
+  }
+  .envelope.open {
+    transform:rotateX(180deg) scale(1.5);
+  }
+
+  .card {
+    width:90%;
+    max-width:500px;
+    padding:15px;
+    background:rgba(0,0,0,0.7);
+    border-radius:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.8s ease;
+    text-align:center;
+    color:#fff;
+    border: 2px solid #ff0000;
+    box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
+  }
+
+  .card h1, .card .subtitle, .card .message {
+    text-shadow:none;
+    box-shadow:none;
+  }
+
+  .card h1 {
+    font-size:24px;
+    margin:6px 0;
+  }
+  .card .subtitle {
+    font-size:14px;
+    margin:4px 0;
+  }
+  .card .message {
+    margin-top:12px;
+    background:rgba(255,255,255,0.05);
+    padding:12px;
+    border-radius:12px;
+    font-size:16px;
+    color:#fff;
+    word-break: break-word;
+  }
+
+  canvas#confetti {
+    position:absolute; inset:0;
+    pointer-events:none;
+  }
+
+  /* Responsividade */
+  @media(max-width: 400px){
+    .card { max-width:90%; padding:12px; }
+    .card h1 { font-size:20px; }
+    .card .subtitle { font-size:12px; }
+    .card .message { font-size:14px; padding:10px; }
+    .envelope { width:60px; height:50px; }
+    .envelope::before { border-left:30px solid transparent; border-right:30px solid transparent; border-bottom:25px solid #ffb600; top:-25px; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="envelope" id="envelope">📬</div>
+
+<div class="card" id="card">
+  <div class="subtitle">Para:</div>
+  <h1 id="friendName">Meu querido Marquitos</h1>
+  <div class="subtitle">Seu dia especial foi 7 de maio e como lembrança trarei esta carta.</div>
+  <div class="message">
+    Descupe-me pelo atraso da carta. sinto lhe informar que vc esta devendo a mim por milhares e milhares de anos. anos esse em que te conheci mas não se preocupe pois estarei aqui para te observar e calentar seus choros mesmo não sendo mais tão proxima ainda sinto a consideração. Sei que nossa amizade não é mais a mesma, e estou começando a me acostumar com isso mesmo tenha demorado. Se eu apagasse o canal onde conversamos, além da grande história que há nele, apagaria também um laço construído ao longo de anos... mas tudo bem, isso não vai acontecer mas ainda sinto falta. Saiba que você se esforça ao máximo, e eu reconheço isso. Estou muito feliz por você e que conquiste tudo que queira!
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+const envelope = document.getElementById('envelope');
+const card = document.getElementById('card');
+
+let topPos = -150;
+let scale = 1;
+function animateEnvelope(){
+  if(topPos < window.innerHeight/2 - 50){
+    topPos += 3;
+    scale += 0.008;
+    envelope.style.top = topPos + 'px';
+    envelope.style.transform = `scale(${scale})`;
+    requestAnimationFrame(animateEnvelope);
+  }
+}
+animateEnvelope();
+
+envelope.addEventListener('click', ()=>{
+  envelope.classList.add('open');
+  setTimeout(()=>{
+    envelope.style.display='none';
+    card.style.opacity='1';
+    card.style.pointerEvents='auto';
+    burst(window.innerWidth/2, window.innerHeight/3, 80);
+  },600);
+});
+
+// Confetti
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let particles = [];
+
+class Particle{
+  constructor(x,y,a,s,sz,c){
+    this.x=x; this.y=y; this.vx=Math.cos(a)*s; this.vy=Math.sin(a)*s; this.size=sz; this.color=c;
+    this.rot=Math.random()*360; this.spin=Math.random()*0.4-0.2;
+  }
+  update(){ this.vy+=0.04; this.x+=this.vx; this.y+=this.vy; this.rot+=this.spin;}
+  draw(ctx){
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.rot);
+    ctx.fillStyle=this.color;
+    ctx.fillRect(-this.size/2,-this.size/2,this.size,this.size*0.6);
+    ctx.restore();
+  }
+}
+
+function burst(x,y,amount=40){
+  const colors=['#ff6b6b','#ffd166','#06d6a0','#4cc9f0','#b197fc','#ff9ec5'];
+  for(let i=0;i<amount;i++){
+    const angle=Math.random()*Math.PI-Math.PI/2;
+    const speed=Math.random()*5+1;
+    const size=Math.random()*8+6;
+    const color=colors[Math.floor(Math.random()*colors.length)];
+    particles.push(new Particle(x,y,angle,speed,size,color));
+  }
+}
+
+function loop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.update();
+    p.draw(ctx);
+    if(p.y>canvas.height+50||p.x<-50||p.x>canvas.width+50) particles.splice(i,1);
+  }
+  requestAnimationFrame(loop);
+}
+loop();
+
+setInterval(()=>{burst(Math.random()*canvas.width,Math.random()*100+30,12)},2200);
+</script>
+
+</body>
+</html>
